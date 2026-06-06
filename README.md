@@ -128,7 +128,7 @@ User → Streamlit UI
 ### Step 1 — Clone the repository
 
 ```bash
-git clone https://github.com/rupammukherjee/AI-Interview-Agent.git
+git clone https://github.com/Rupam179/AI-Interview-Agent.git
 cd AI-Interview-Agent
 ```
 

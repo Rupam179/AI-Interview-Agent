@@ -1,0 +1,463 @@
+
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: var(--font-sans); background: #0d0f1a; color: #f0f0f8; }
+.app { display: flex; height: 600px; background: #0d0f1a; border-radius: var(--border-radius-lg); overflow: hidden; border: 0.5px solid rgba(255,255,255,0.1); }
+.sidebar { width: 200px; background: rgba(255,255,255,0.03); border-right: 0.5px solid rgba(255,255,255,0.08); padding: 16px 0; display: flex; flex-direction: column; flex-shrink: 0; }
+.sidebar-logo { text-align: center; padding: 8px 16px 20px; border-bottom: 0.5px solid rgba(255,255,255,0.08); margin-bottom: 12px; }
+.sidebar-logo .logo-icon { font-size: 24px; }
+.sidebar-logo .logo-text { font-size: 13px; font-weight: 500; background: linear-gradient(135deg, #6c63ff, #00d4ff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-top: 4px; }
+.sidebar-logo .logo-sub { font-size: 10px; color: #555577; margin-top: 2px; }
+.nav-item { padding: 9px 16px; font-size: 12px; color: #7777aa; cursor: pointer; transition: all 0.15s; display: flex; align-items: center; gap: 8px; border-left: 2px solid transparent; }
+.nav-item:hover { background: rgba(255,255,255,0.04); color: #f0f0f8; }
+.nav-item.active { background: rgba(108,99,255,0.12); color: #a09aff; border-left-color: #6c63ff; }
+.nav-item i { font-size: 15px; }
+.nav-divider { border-top: 0.5px solid rgba(255,255,255,0.06); margin: 8px 0; }
+.nav-user { padding: 10px 14px; margin: auto 8px 8px; background: rgba(108,99,255,0.08); border-radius: 8px; border: 0.5px solid rgba(108,99,255,0.2); }
+.nav-user .u-label { font-size: 9px; color: #555577; text-transform: uppercase; letter-spacing: 0.5px; }
+.nav-user .u-name { font-size: 12px; font-weight: 500; color: #f0f0f8; margin-top: 1px; }
+.main { flex: 1; overflow-y: auto; padding: 20px; }
+.main::-webkit-scrollbar { width: 4px; }
+.main::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 2px; }
+
+.page { display: none; }
+.page.active { display: block; }
+
+.pg-title { font-size: 20px; font-weight: 500; background: linear-gradient(135deg, #6c63ff, #00d4ff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 4px; }
+.pg-sub { font-size: 12px; color: #7777aa; margin-bottom: 18px; }
+
+.glass-card { background: rgba(255,255,255,0.04); border: 0.5px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 16px; margin-bottom: 12px; }
+
+.kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 16px; }
+.kpi-card { background: rgba(255,255,255,0.04); border: 0.5px solid rgba(255,255,255,0.08); border-radius: 10px; padding: 14px; text-align: center; }
+.kpi-icon { font-size: 18px; margin-bottom: 6px; }
+.kpi-label { font-size: 9px; color: #7777aa; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 4px; }
+.kpi-val { font-size: 20px; font-weight: 500; background: linear-gradient(135deg, #6c63ff, #00d4ff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+
+.charts-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+.chart-box { background: rgba(255,255,255,0.04); border: 0.5px solid rgba(255,255,255,0.08); border-radius: 10px; padding: 14px; }
+.chart-title { font-size: 11px; color: #9999bb; margin-bottom: 12px; font-weight: 500; }
+
+.bar-row { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+.bar-label { font-size: 10px; color: #9999bb; width: 90px; flex-shrink: 0; }
+.bar-bg { flex: 1; background: rgba(255,255,255,0.06); border-radius: 999px; height: 8px; overflow: hidden; }
+.bar-fill { height: 100%; border-radius: 999px; }
+.bar-val { font-size: 10px; color: #f0f0f8; width: 28px; text-align: right; flex-shrink: 0; }
+
+.trend-svg { width: 100%; height: 80px; }
+
+.badge { display: inline-block; padding: 2px 10px; border-radius: 999px; font-size: 10px; font-weight: 500; }
+.badge-green { background: rgba(0,230,118,0.12); color: #00e676; border: 0.5px solid rgba(0,230,118,0.3); }
+.badge-blue { background: rgba(108,99,255,0.15); color: #a09aff; border: 0.5px solid rgba(108,99,255,0.3); }
+.badge-red { background: rgba(255,82,82,0.12); color: #ff7070; border: 0.5px solid rgba(255,82,82,0.3); }
+.badge-amber { background: rgba(255,171,64,0.12); color: #ffab40; border: 0.5px solid rgba(255,171,64,0.3); }
+
+.table-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 11px; }
+th { color: #7777aa; font-weight: 500; text-align: left; padding: 6px 10px; border-bottom: 0.5px solid rgba(255,255,255,0.08); text-transform: uppercase; letter-spacing: 0.5px; font-size: 9px; }
+td { padding: 8px 10px; border-bottom: 0.5px solid rgba(255,255,255,0.05); color: #d0d0e8; }
+
+.skill-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.chip { padding: 3px 10px; border-radius: 999px; font-size: 10px; }
+.chip-green { background: rgba(0,230,118,0.1); color: #00e676; border: 0.5px solid rgba(0,230,118,0.25); }
+.chip-red { background: rgba(255,82,82,0.1); color: #ff7070; border: 0.5px solid rgba(255,82,82,0.25); }
+
+.q-card { background: rgba(255,255,255,0.04); border: 0.5px solid rgba(255,255,255,0.08); border-radius: 10px; padding: 14px; margin-bottom: 10px; }
+.q-type { font-size: 9px; font-weight: 500; padding: 2px 8px; border-radius: 999px; display: inline-block; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
+.q-type-tech { background: rgba(108,99,255,0.15); color: #a09aff; border: 0.5px solid rgba(108,99,255,0.3); }
+.q-type-hr { background: rgba(0,212,255,0.12); color: #00d4ff; border: 0.5px solid rgba(0,212,255,0.25); }
+.q-text { font-size: 12px; color: #f0f0f8; line-height: 1.6; margin-bottom: 10px; }
+.q-answer { width: 100%; background: rgba(255,255,255,0.03); border: 0.5px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 8px 10px; color: #d0d0e8; font-size: 11px; font-family: var(--font-sans); resize: none; height: 60px; }
+.q-answer:focus { outline: none; border-color: rgba(108,99,255,0.5); }
+
+.btn { padding: 8px 18px; border-radius: 8px; font-size: 12px; font-weight: 500; cursor: pointer; border: none; transition: all 0.15s; }
+.btn-primary { background: linear-gradient(135deg, #6c63ff, #00d4ff); color: white; }
+.btn-primary:hover { opacity: 0.9; transform: translateY(-1px); }
+.btn-outline { background: transparent; color: #a09aff; border: 0.5px solid rgba(108,99,255,0.4); }
+.btn-outline:hover { background: rgba(108,99,255,0.1); }
+
+.score-ring-wrap { display: flex; justify-content: center; align-items: center; padding: 10px 0; }
+.radar-svg { width: 140px; height: 140px; }
+
+.career-card { background: rgba(255,255,255,0.04); border: 0.5px solid rgba(255,255,255,0.08); border-radius: 10px; padding: 14px; }
+.career-title { font-size: 13px; font-weight: 500; color: #f0f0f8; margin-bottom: 4px; }
+.career-desc { font-size: 11px; color: #9999bb; line-height: 1.5; margin-bottom: 8px; }
+
+.home-hero { text-align: center; padding: 20px 0 24px; }
+.home-hero h1 { font-size: 26px; font-weight: 500; background: linear-gradient(135deg, #6c63ff, #00d4ff, #ff6584); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 8px; }
+.home-hero p { font-size: 12px; color: #7777aa; max-width: 400px; margin: 0 auto 20px; line-height: 1.7; }
+.feat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.feat-card { background: rgba(255,255,255,0.04); border: 0.5px solid rgba(255,255,255,0.08); border-radius: 10px; padding: 14px; }
+.feat-icon { font-size: 20px; margin-bottom: 6px; }
+.feat-title { font-size: 12px; font-weight: 500; color: #f0f0f8; margin-bottom: 4px; }
+.feat-desc { font-size: 10px; color: #7777aa; line-height: 1.5; }
+.sdg-row { display: flex; gap: 12px; margin-top: 14px; }
+.sdg-box { flex: 1; border-radius: 10px; padding: 12px; text-align: center; }
+.sdg-8 { background: rgba(108,99,255,0.1); border: 0.5px solid rgba(108,99,255,0.25); }
+.sdg-4 { background: rgba(0,212,255,0.08); border: 0.5px solid rgba(0,212,255,0.2); }
+.sdg-num { font-size: 16px; font-weight: 500; }
+.sdg-8 .sdg-num { color: #a09aff; }
+.sdg-4 .sdg-num { color: #00d4ff; }
+.sdg-name { font-size: 10px; color: #9999bb; margin-top: 2px; }
+
+.form-group { margin-bottom: 12px; }
+.form-label { font-size: 10px; color: #7777aa; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 5px; display: block; }
+.form-input { width: 100%; background: rgba(255,255,255,0.04); border: 0.5px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 9px 12px; color: #f0f0f8; font-size: 12px; font-family: var(--font-sans); }
+.form-input:focus { outline: none; border-color: rgba(108,99,255,0.5); }
+
+.ats-gauge-wrap { display: flex; flex-direction: column; align-items: center; }
+.ats-score-num { font-size: 32px; font-weight: 500; color: #00e676; margin-top: -10px; }
+.ats-label { font-size: 10px; color: #7777aa; margin-top: 2px; }
+
+.prog-bar { height: 6px; background: rgba(255,255,255,0.06); border-radius: 999px; margin-bottom: 4px; overflow: hidden; }
+.prog-fill { height: 100%; border-radius: 999px; background: linear-gradient(90deg, #6c63ff, #00d4ff); }
+
+.voice-btn { width: 70px; height: 70px; border-radius: 50%; background: linear-gradient(135deg, #6c63ff, #00d4ff); border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; margin: 0 auto 12px; transition: all 0.2s; }
+.voice-btn:hover { transform: scale(1.05); }
+.voice-btn i { font-size: 28px; color: white; }
+.voice-btn.recording { background: linear-gradient(135deg, #ff5252, #ff6584); animation: pulse 1s infinite; }
+@keyframes pulse { 0%,100% { box-shadow: 0 0 0 0 rgba(255,82,82,0.4); } 50% { box-shadow: 0 0 0 12px rgba(255,82,82,0); } }
+
+.result-scores { display: grid; grid-template-columns: repeat(4,1fr); gap: 8px; margin-bottom: 14px; }
+.res-card { background: rgba(255,255,255,0.04); border: 0.5px solid rgba(255,255,255,0.08); border-radius: 10px; padding: 12px; text-align: center; }
+.res-label { font-size: 9px; color: #7777aa; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+.res-val { font-size: 22px; font-weight: 500; }
+.res-green { color: #00e676; }
+.res-blue { color: #a09aff; }
+.res-amber { color: #ffab40; }
+
+.fb-cols { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-top: 12px; }
+.fb-card { background: rgba(255,255,255,0.04); border-radius: 10px; padding: 12px; border: 0.5px solid rgba(255,255,255,0.08); }
+.fb-heading { font-size: 11px; font-weight: 500; margin-bottom: 8px; }
+.fb-item { font-size: 10px; color: #c0c0d8; padding: 3px 0; border-bottom: 0.5px solid rgba(255,255,255,0.05); line-height: 1.4; }
+
+.nav-progress { display: flex; gap: 4px; margin-bottom: 14px; }
+.np { flex: 1; height: 4px; border-radius: 2px; }
+.np-done { background: #00e676; }
+.np-active { background: #6c63ff; }
+.np-todo { background: rgba(255,255,255,0.1); }
+</style>
+
+<div class="app">
+  <div class="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-icon">🤖</div>
+      <div class="logo-text">AI Interview Agent</div>
+      <div class="logo-sub">Powered by Gemini</div>
+    </div>
+    <div class="nav-item active" onclick="showPage('home',this)" id="nav-home"><i class="ti ti-home" aria-hidden="true"></i> Home</div>
+    <div class="nav-item" onclick="showPage('dashboard',this)" id="nav-dashboard"><i class="ti ti-chart-bar" aria-hidden="true"></i> Dashboard</div>
+    <div class="nav-item" onclick="showPage('resume',this)" id="nav-resume"><i class="ti ti-file" aria-hidden="true"></i> Resume Analyzer</div>
+    <div class="nav-item" onclick="showPage('mock',this)" id="nav-mock"><i class="ti ti-message" aria-hidden="true"></i> Mock Interview</div>
+    <div class="nav-item" onclick="showPage('voice',this)" id="nav-voice"><i class="ti ti-microphone" aria-hidden="true"></i> Voice Interview</div>
+    <div class="nav-item" onclick="showPage('results',this)" id="nav-results"><i class="ti ti-trophy" aria-hidden="true"></i> Results</div>
+    <div class="nav-item" onclick="showPage('career',this)" id="nav-career"><i class="ti ti-compass" aria-hidden="true"></i> Career Advisor</div>
+    <div class="nav-divider"></div>
+    <div class="nav-item" onclick="showPage('about',this)" id="nav-about"><i class="ti ti-info-circle" aria-hidden="true"></i> About</div>
+    <div class="nav-user">
+      <div class="u-label">Logged in as</div>
+      <div class="u-name">Rupam Mukherjee</div>
+    </div>
+  </div>
+
+  <div class="main">
+
+    <div class="page active" id="page-home">
+      <div class="home-hero">
+        <div style="font-size:36px;margin-bottom:10px">🤖</div>
+        <h1>AI Interview Agent</h1>
+        <p>Your intelligent interview preparation companion powered by Google Gemini AI. Analyze your resume, practice interviews, and land your dream job.</p>
+        <div style="display:flex;gap:10px;justify-content:center">
+          <button class="btn btn-primary" onclick="showPage('resume',document.getElementById('nav-resume'))">Get Started →</button>
+          <button class="btn btn-outline" onclick="showPage('about',document.getElementById('nav-about'))">Learn More</button>
+        </div>
+      </div>
+      <div class="feat-grid">
+        <div class="feat-card"><div class="feat-icon">📄</div><div class="feat-title">Resume Analyzer</div><div class="feat-desc">ATS scoring, skill extraction, gap analysis and AI suggestions</div></div>
+        <div class="feat-card"><div class="feat-icon">💬</div><div class="feat-title">Mock Interview</div><div class="feat-desc">AI-generated questions tailored to your resume and job role</div></div>
+        <div class="feat-card"><div class="feat-icon">🎙️</div><div class="feat-title">Voice Interview</div><div class="feat-desc">Speak your answers, AI converts speech to text and evaluates</div></div>
+        <div class="feat-card"><div class="feat-icon">📊</div><div class="feat-title">Analytics Dashboard</div><div class="feat-desc">Score trends, radar charts, ATS gauge and interview history</div></div>
+        <div class="feat-card"><div class="feat-icon">💡</div><div class="feat-title">Personalized Feedback</div><div class="feat-desc">Strengths, weaknesses, improvements and learning roadmap</div></div>
+        <div class="feat-card"><div class="feat-icon">🧭</div><div class="feat-title">Career Advisor</div><div class="feat-desc">Career paths, certifications, courses and tech recommendations</div></div>
+      </div>
+      <div class="sdg-row">
+        <div class="sdg-box sdg-8"><div style="font-size:20px">💼</div><div class="sdg-num">SDG 8</div><div class="sdg-name">Decent Work &amp; Economic Growth</div></div>
+        <div class="sdg-box sdg-4"><div style="font-size:20px">📚</div><div class="sdg-num">SDG 4</div><div class="sdg-name">Quality Education</div></div>
+      </div>
+    </div>
+
+    <div class="page" id="page-dashboard">
+      <div class="pg-title">Hello, Rupam 👋</div>
+      <div class="pg-sub">Here's your interview preparation overview</div>
+      <div class="kpi-grid">
+        <div class="kpi-card"><div class="kpi-icon">📝</div><div class="kpi-label">Total Interviews</div><div class="kpi-val">6</div></div>
+        <div class="kpi-card"><div class="kpi-icon">✅</div><div class="kpi-label">Completed</div><div class="kpi-val">5</div></div>
+        <div class="kpi-card"><div class="kpi-icon">⭐</div><div class="kpi-label">Avg Score</div><div class="kpi-val">74</div></div>
+        <div class="kpi-card"><div class="kpi-icon">📄</div><div class="kpi-label">ATS Score</div><div class="kpi-val">78</div></div>
+      </div>
+      <div class="charts-row">
+        <div class="chart-box">
+          <div class="chart-title">Score improvement trend</div>
+          <svg class="trend-svg" viewBox="0 0 200 70">
+            <defs><linearGradient id="tg" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#6c63ff" stop-opacity="0.3"/><stop offset="100%" stop-color="#6c63ff" stop-opacity="0"/></linearGradient></defs>
+            <path d="M10,55 L45,48 L80,42 L115,35 L150,28 L185,18" stroke="#6c63ff" stroke-width="2" fill="none"/>
+            <path d="M10,55 L45,48 L80,42 L115,35 L150,28 L185,18 L185,70 L10,70 Z" fill="url(#tg)"/>
+            <circle cx="10" cy="55" r="3" fill="#00d4ff"/><circle cx="45" cy="48" r="3" fill="#00d4ff"/><circle cx="80" cy="42" r="3" fill="#00d4ff"/><circle cx="115" cy="35" r="3" fill="#00d4ff"/><circle cx="150" cy="28" r="3" fill="#00d4ff"/><circle cx="185" cy="18" r="3" fill="#00d4ff"/>
+            <text x="10" y="68" font-size="7" fill="#7777aa">Mar</text><text x="45" y="68" font-size="7" fill="#7777aa">Apr</text><text x="80" y="68" font-size="7" fill="#7777aa">May</text><text x="115" y="68" font-size="7" fill="#7777aa">Jun</text>
+          </svg>
+        </div>
+        <div class="chart-box">
+          <div class="chart-title">Score breakdown — latest</div>
+          <div class="bar-row"><div class="bar-label">Technical</div><div class="bar-bg"><div class="bar-fill" style="width:72%;background:linear-gradient(90deg,#6c63ff,#8b85ff)"></div></div><div class="bar-val">72</div></div>
+          <div class="bar-row"><div class="bar-label">Communication</div><div class="bar-bg"><div class="bar-fill" style="width:81%;background:linear-gradient(90deg,#00d4ff,#6ce6ff)"></div></div><div class="bar-val">81</div></div>
+          <div class="bar-row"><div class="bar-label">Confidence</div><div class="bar-bg"><div class="bar-fill" style="width:68%;background:linear-gradient(90deg,#ff6584,#ff8fa3)"></div></div><div class="bar-val">68</div></div>
+          <div class="bar-row"><div class="bar-label">Overall</div><div class="bar-bg"><div class="bar-fill" style="width:74%;background:linear-gradient(90deg,#00e676,#69ffa8)"></div></div><div class="bar-val">74</div></div>
+        </div>
+      </div>
+      <div class="glass-card">
+        <div class="chart-title" style="margin-bottom:8px">Interview history</div>
+        <div class="table-wrap">
+          <table>
+            <tr><th>Date</th><th>Role</th><th>Difficulty</th><th>Type</th><th>Status</th><th>Score</th></tr>
+            <tr><td>2024-06-05</td><td>Software Engineer</td><td><span class="badge badge-amber">Intermediate</span></td><td>Text</td><td><span class="badge badge-green">✅ Completed</span></td><td>74/100</td></tr>
+            <tr><td>2024-06-03</td><td>Data Analyst</td><td><span class="badge badge-blue">Beginner</span></td><td>Voice</td><td><span class="badge badge-green">✅ Completed</span></td><td>69/100</td></tr>
+            <tr><td>2024-05-30</td><td>AI Engineer</td><td><span class="badge badge-red">Advanced</span></td><td>Text</td><td><span class="badge badge-green">✅ Completed</span></td><td>61/100</td></tr>
+            <tr><td>2024-05-25</td><td>Full Stack Dev</td><td><span class="badge badge-amber">Intermediate</span></td><td>Text</td><td><span class="badge badge-green">✅ Completed</span></td><td>78/100</td></tr>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="page" id="page-resume">
+      <div class="pg-title">Resume Analyzer</div>
+      <div class="pg-sub">AI-powered ATS scoring, skill extraction and gap analysis</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
+        <div class="glass-card">
+          <div style="border:1.5px dashed rgba(108,99,255,0.3);border-radius:10px;padding:20px;text-align:center;margin-bottom:12px">
+            <div style="font-size:28px;margin-bottom:6px">📄</div>
+            <div style="font-size:12px;color:#9999bb;margin-bottom:8px">Upload PDF or DOCX resume</div>
+            <div style="font-size:10px;color:#555577">Rupam_Mukherjee_Resume.pdf · 124 KB</div>
+            <div style="margin-top:8px"><span class="badge badge-green">✅ Uploaded</span></div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Target Job Role</label>
+            <select class="form-input" style="cursor:pointer">
+              <option>Software Engineer</option>
+              <option>Data Scientist</option>
+              <option>AI Engineer</option>
+              <option>Full Stack Developer</option>
+            </select>
+          </div>
+          <button class="btn btn-primary" style="width:100%">🔍 Analyze Resume</button>
+        </div>
+        <div class="glass-card" style="display:flex;flex-direction:column;align-items:center;justify-content:center">
+          <div class="ats-gauge-wrap">
+            <svg viewBox="0 0 120 70" width="140">
+              <path d="M15,65 A50,50 0 0,1 105,65" stroke="rgba(255,255,255,0.06)" stroke-width="10" fill="none"/>
+              <path d="M15,65 A50,50 0 0,1 105,65" stroke="url(#gg)" stroke-width="10" fill="none" stroke-dasharray="157" stroke-dashoffset="35"/>
+              <defs><linearGradient id="gg" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#ff5252"/><stop offset="50%" stop-color="#ffab40"/><stop offset="100%" stop-color="#00e676"/></linearGradient></defs>
+              <text x="60" y="58" text-anchor="middle" font-size="18" font-weight="500" fill="#00e676">78</text>
+              <text x="60" y="68" text-anchor="middle" font-size="7" fill="#7777aa">ATS Score</text>
+            </svg>
+          </div>
+          <div style="font-size:11px;color:#9999bb;text-align:center;margin-top:4px;padding:0 10px;line-height:1.5">B.Tech CSE student with strong Python, ML and web development skills. Good project experience.</div>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
+        <div class="glass-card">
+          <div style="font-size:11px;font-weight:500;color:#00e676;margin-bottom:8px">✅ Identified Skills</div>
+          <div class="skill-chips">
+            <span class="chip chip-green">Python</span><span class="chip chip-green">Machine Learning</span><span class="chip chip-green">SQL</span><span class="chip chip-green">React</span><span class="chip chip-green">TensorFlow</span><span class="chip chip-green">Git</span><span class="chip chip-green">REST API</span><span class="chip chip-green">Pandas</span>
+          </div>
+        </div>
+        <div class="glass-card">
+          <div style="font-size:11px;font-weight:500;color:#ff7070;margin-bottom:8px">⚠️ Missing Skills</div>
+          <div class="skill-chips">
+            <span class="chip chip-red">Docker</span><span class="chip chip-red">Kubernetes</span><span class="chip chip-red">AWS</span><span class="chip chip-red">System Design</span><span class="chip chip-red">CI/CD</span>
+          </div>
+        </div>
+      </div>
+      <div class="glass-card">
+        <div style="font-size:11px;font-weight:500;color:#a09aff;margin-bottom:10px">💡 AI Improvement Suggestions</div>
+        <div style="font-size:11px;color:#c0c0d8;padding:6px 0;border-bottom:0.5px solid rgba(255,255,255,0.05)"><span style="color:#6c63ff;font-weight:500">1.</span> Add quantified achievements e.g. "Improved model accuracy by 15%"</div>
+        <div style="font-size:11px;color:#c0c0d8;padding:6px 0;border-bottom:0.5px solid rgba(255,255,255,0.05)"><span style="color:#6c63ff;font-weight:500">2.</span> Include keywords: Docker, Kubernetes, AWS, microservices in skills section</div>
+        <div style="font-size:11px;color:#c0c0d8;padding:6px 0;border-bottom:0.5px solid rgba(255,255,255,0.05)"><span style="color:#6c63ff;font-weight:500">3.</span> Add a professional summary at the top with role and years of experience</div>
+        <div style="font-size:11px;color:#c0c0d8;padding:6px 0;"><span style="color:#6c63ff;font-weight:500">4.</span> Use bullet points for project descriptions starting with action verbs</div>
+      </div>
+    </div>
+
+    <div class="page" id="page-mock">
+      <div class="pg-title">Mock Interview</div>
+      <div class="pg-sub">Software Engineer · Intermediate · Question 3 of 10</div>
+      <div class="nav-progress">
+        <div class="np np-done"></div><div class="np np-done"></div><div class="np np-active"></div>
+        <div class="np np-todo"></div><div class="np np-todo"></div><div class="np np-todo"></div>
+        <div class="np np-todo"></div><div class="np np-todo"></div><div class="np np-todo"></div><div class="np np-todo"></div>
+      </div>
+      <div style="margin-bottom:6px"><div class="prog-bar"><div class="prog-fill" style="width:30%"></div></div><div style="font-size:9px;color:#7777aa;text-align:right">3 / 10</div></div>
+      <div class="q-card">
+        <span class="q-type q-type-tech">Technical</span>
+        <div class="q-text">Explain the difference between supervised and unsupervised learning. Give a real-world example of each from your project experience.</div>
+        <textarea class="q-answer" placeholder="Type your answer here... Be detailed and specific.">Supervised learning uses labeled data to train a model — for example, in my sentiment analysis project I trained a model using labeled tweets (positive/negative). Unsupervised learning finds patterns in unlabeled data — like K-means clustering I used for customer segmentation.</textarea>
+      </div>
+      <div class="q-card">
+        <span class="q-type q-type-hr">Behavioral</span>
+        <div class="q-text">Describe a time when you had to debug a difficult technical issue. What was your approach?</div>
+        <textarea class="q-answer" placeholder="Type your answer here..."></textarea>
+      </div>
+      <div style="display:flex;gap:10px;margin-top:12px">
+        <button class="btn btn-outline">◀ Previous</button>
+        <button class="btn btn-outline">Next ▶</button>
+        <button class="btn btn-primary" style="margin-left:auto" onclick="showPage('results',document.getElementById('nav-results'))">✅ Submit All Answers</button>
+      </div>
+    </div>
+
+    <div class="page" id="page-voice">
+      <div class="pg-title">Voice Interview</div>
+      <div class="pg-sub">Speak your answers — AI listens and evaluates in real time</div>
+      <div class="q-card" style="text-align:center;padding:20px">
+        <span class="q-type q-type-tech">Technical</span>
+        <div class="q-text" style="font-size:14px;margin-bottom:16px">What is the difference between a list and a tuple in Python? When would you use each?</div>
+        <div style="font-size:30px;margin-bottom:12px">🎙️</div>
+        <button class="voice-btn" id="voiceBtn" onclick="toggleRecording()"><i class="ti ti-microphone" aria-hidden="true"></i></button>
+        <div id="voiceStatus" style="font-size:11px;color:#7777aa;margin-bottom:12px">Click to start recording</div>
+        <div class="glass-card" style="text-align:left;border:0.5px solid rgba(0,230,118,0.25);">
+          <div style="font-size:9px;color:#00e676;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;font-weight:500">📝 Transcribed Answer</div>
+          <div style="font-size:11px;color:#d0d0e8;line-height:1.6">A list is mutable — you can add, remove, or change elements after creation. A tuple is immutable — once created, it cannot be changed. I use lists when I need to modify data like storing user inputs, and tuples for fixed data like coordinates or database records where immutability is preferred for safety.</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:10px;margin-top:12px">
+        <button class="btn btn-outline">◀ Previous</button>
+        <button class="btn btn-outline">Next ▶</button>
+        <button class="btn btn-primary" style="margin-left:auto" onclick="showPage('results',document.getElementById('nav-results'))">✅ Submit All</button>
+      </div>
+    </div>
+
+    <div class="page" id="page-results">
+      <div class="pg-title">Interview Results</div>
+      <div class="pg-sub">Software Engineer · Intermediate · June 5, 2024</div>
+      <div class="result-scores">
+        <div class="res-card"><div class="res-label">Technical</div><div class="res-val res-blue">72</div><div style="font-size:9px;color:#7777aa">/100</div></div>
+        <div class="res-card"><div class="res-label">Communication</div><div class="res-val res-green">81</div><div style="font-size:9px;color:#7777aa">/100</div></div>
+        <div class="res-card"><div class="res-label">Confidence</div><div class="res-val res-amber">68</div><div style="font-size:9px;color:#7777aa">/100</div></div>
+        <div class="res-card"><div class="res-label">Overall</div><div class="res-val res-green">74</div><div style="font-size:9px;color:#7777aa">/100</div></div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
+        <div class="chart-box">
+          <div class="chart-title">Performance radar</div>
+          <svg class="radar-svg" viewBox="0 0 140 140" style="display:block;margin:0 auto">
+            <polygon points="70,10 110,45 95,95 45,95 30,45" fill="rgba(108,99,255,0.1)" stroke="rgba(255,255,255,0.08)" stroke-width="0.5"/>
+            <polygon points="70,30 94,52 85,82 55,82 46,52" fill="rgba(108,99,255,0.2)" stroke="#6c63ff" stroke-width="1.5"/>
+            <circle cx="70" cy="30" r="3" fill="#00d4ff"/><circle cx="94" cy="52" r="3" fill="#00d4ff"/><circle cx="85" cy="82" r="3" fill="#00d4ff"/><circle cx="55" cy="82" r="3" fill="#00d4ff"/><circle cx="46" cy="52" r="3" fill="#00d4ff"/>
+            <text x="70" y="8" text-anchor="middle" font-size="8" fill="#9999bb">Technical</text>
+            <text x="118" y="48" font-size="8" fill="#9999bb">Comm.</text>
+            <text x="90" y="105" font-size="8" fill="#9999bb">Conf.</text>
+            <text x="20" y="105" font-size="8" fill="#9999bb">Overall</text>
+            <text x="8" y="48" font-size="8" fill="#9999bb">HR</text>
+          </svg>
+        </div>
+        <div class="chart-box">
+          <div class="chart-title">Question scores</div>
+          <div class="bar-row"><div class="bar-label">Q1 — OOP concepts</div><div class="bar-bg"><div class="bar-fill" style="width:80%;background:#00e676"></div></div><div class="bar-val" style="color:#00e676">8/10</div></div>
+          <div class="bar-row"><div class="bar-label">Q2 — System design</div><div class="bar-bg"><div class="bar-fill" style="width:60%;background:#ffab40"></div></div><div class="bar-val" style="color:#ffab40">6/10</div></div>
+          <div class="bar-row"><div class="bar-label">Q3 — ML concepts</div><div class="bar-bg"><div class="bar-fill" style="width:90%;background:#00e676"></div></div><div class="bar-val" style="color:#00e676">9/10</div></div>
+          <div class="bar-row"><div class="bar-label">Q4 — Debugging</div><div class="bar-bg"><div class="bar-fill" style="width:70%;background:#a09aff"></div></div><div class="bar-val" style="color:#a09aff">7/10</div></div>
+          <div class="bar-row"><div class="bar-label">Q5 — SQL queries</div><div class="bar-bg"><div class="bar-fill" style="width:50%;background:#ff7070"></div></div><div class="bar-val" style="color:#ff7070">5/10</div></div>
+        </div>
+      </div>
+      <div class="fb-cols">
+        <div class="fb-card"><div class="fb-heading" style="color:#00e676">💪 Strengths</div><div class="fb-item">Strong ML and Python fundamentals</div><div class="fb-item">Clear communication style</div><div class="fb-item">Good project examples cited</div></div>
+        <div class="fb-card"><div class="fb-heading" style="color:#ff7070">🔻 Weaknesses</div><div class="fb-item">System design needs improvement</div><div class="fb-item">SQL optimization gaps</div></div>
+        <div class="fb-card"><div class="fb-heading" style="color:#ffab40">🎯 Improvements</div><div class="fb-item">Practice LeetCode SQL problems</div><div class="fb-item">Study Grokking System Design</div><div class="fb-item">Add Docker to your skillset</div></div>
+      </div>
+    </div>
+
+    <div class="page" id="page-career">
+      <div class="pg-title">Career Advisor</div>
+      <div class="pg-sub">AI-powered career paths, certifications and course recommendations</div>
+      <div class="glass-card" style="border:0.5px solid rgba(108,99,255,0.25);margin-bottom:14px">
+        <div style="font-size:11px;font-weight:500;color:#f0f0f8;margin-bottom:6px">🗺️ Your 6–12 Month Roadmap</div>
+        <div style="font-size:11px;color:#c0c0d8;line-height:1.7">Focus on mastering cloud fundamentals (AWS/GCP) and containerization with Docker over the next 3 months. Then spend months 4–6 on system design and DSA for interviews. In months 7–12, build 2 production-grade projects and contribute to open source to strengthen your GitHub portfolio.</div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px">
+        <div class="career-card"><div style="font-size:18px;margin-bottom:6px">💼</div><div class="career-title">ML Engineer</div><div class="career-desc">Design and deploy machine learning systems at scale</div><span class="badge badge-green">₹10–28 LPA</span> <span class="badge badge-blue">High growth</span></div>
+        <div class="career-card" style="border:0.5px solid rgba(108,99,255,0.35)"><div style="font-size:18px;margin-bottom:6px">🤖</div><div class="career-title">AI Engineer</div><div class="career-desc">Build AI-powered applications using LLMs and APIs</div><span class="badge badge-green">₹12–35 LPA</span> <span class="badge badge-blue">Very high</span></div>
+        <div class="career-card"><div style="font-size:18px;margin-bottom:6px">🖥️</div><div class="career-title">Full Stack Dev</div><div class="career-desc">Build end-to-end web applications and platforms</div><span class="badge badge-green">₹8–22 LPA</span> <span class="badge badge-blue">Stable</span></div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div class="glass-card">
+          <div style="font-size:11px;font-weight:500;color:#ffab40;margin-bottom:8px">🏆 Certifications</div>
+          <div style="font-size:11px;color:#d0d0e8;padding:5px 0;border-bottom:0.5px solid rgba(255,255,255,0.05)">AWS Certified Developer — Associate · Amazon</div>
+          <div style="font-size:11px;color:#d0d0e8;padding:5px 0;border-bottom:0.5px solid rgba(255,255,255,0.05)">TensorFlow Developer Certificate · Google</div>
+          <div style="font-size:11px;color:#d0d0e8;padding:5px 0">Google Cloud Professional Data Engineer</div>
+        </div>
+        <div class="glass-card">
+          <div style="font-size:11px;font-weight:500;color:#00d4ff;margin-bottom:8px">📚 Recommended Courses</div>
+          <div style="font-size:11px;color:#d0d0e8;padding:5px 0;border-bottom:0.5px solid rgba(255,255,255,0.05)">Deep Learning Specialization · Coursera · 4 months</div>
+          <div style="font-size:11px;color:#d0d0e8;padding:5px 0;border-bottom:0.5px solid rgba(255,255,255,0.05)">System Design Interview · Udemy · 6 weeks</div>
+          <div style="font-size:11px;color:#d0d0e8;padding:5px 0">Docker &amp; Kubernetes · Udemy · 4 weeks</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="page" id="page-about">
+      <div class="pg-title">About This Project</div>
+      <div class="pg-sub">AI Interview Agent — Final Year ESD Project</div>
+      <div class="glass-card" style="margin-bottom:10px">
+        <div style="font-size:12px;font-weight:500;color:#f0f0f8;margin-bottom:6px">🤖 Project Overview</div>
+        <div style="font-size:11px;color:#c0c0d8;line-height:1.7">AI Interview Agent is a fully functional AI-powered Interview Preparation Platform built as a Final Year Project for B.Tech CSE (AI &amp; ML) at Techno India University. The platform leverages Google Gemini 1.5 Flash to help students prepare through intelligent question generation, resume analysis, voice interviews, and personalized feedback.</div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+        <div class="glass-card" style="border:0.5px solid rgba(108,99,255,0.25)">
+          <div style="font-size:11px;font-weight:500;color:#a09aff;margin-bottom:8px">SDG 8 — Decent Work &amp; Economic Growth</div>
+          <div style="font-size:10px;color:#c0c0d8;line-height:1.8">✅ Bridges skill gap between education and employment<br>✅ Free AI coaching accessible to all students<br>✅ Increases interview success rates<br>✅ Supports youth employment development</div>
+        </div>
+        <div class="glass-card" style="border:0.5px solid rgba(0,212,255,0.2)">
+          <div style="font-size:11px;font-weight:500;color:#00d4ff;margin-bottom:8px">SDG 4 — Quality Education</div>
+          <div style="font-size:10px;color:#c0c0d8;line-height:1.8">✅ Personalized adaptive learning experiences<br>✅ Structured feedback and learning paths<br>✅ Democratizes quality interview coaching<br>✅ Recommends curated courses &amp; certifications</div>
+        </div>
+      </div>
+      <div class="glass-card" style="text-align:center;border:0.5px solid rgba(108,99,255,0.25)">
+        <div style="font-size:28px;margin-bottom:8px">👨‍💻</div>
+        <div style="font-size:14px;font-weight:500;color:#f0f0f8">Rupam Mukherjee</div>
+        <div style="font-size:11px;color:#a09aff;margin-top:3px">B.Tech CSE (AI &amp; ML) · Techno India University</div>
+        <div style="font-size:10px;color:#7777aa;margin-top:2px">Semester 6 — Entrepreneurship &amp; Skill Development Project</div>
+        <div style="display:flex;justify-content:center;gap:8px;margin-top:12px">
+          <span class="badge badge-blue">Python</span>
+          <span class="badge badge-blue">Streamlit</span>
+          <span class="badge badge-blue">Gemini AI</span>
+          <span class="badge badge-blue">SQLite</span>
+          <span class="badge badge-green">SDG 8 &amp; 4</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+function showPage(id, navEl) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('page-' + id).classList.add('active');
+  if (navEl) navEl.classList.add('active');
+}
+
+var isRec = false;
+function toggleRecording() {
+  var btn = document.getElementById('voiceBtn');
+  var status = document.getElementById('voiceStatus');
+  isRec = !isRec;
+  if (isRec) {
+    btn.classList.add('recording');
+    btn.innerHTML = '<i class="ti ti-player-stop" aria-hidden="true"></i>';
+    status.textContent = '🔴 Recording... Speak now!';
+    status.style.color = '#ff7070';
+  } else {
+    btn.classList.remove('recording');
+    btn.innerHTML = '<i class="ti ti-microphone" aria-hidden="true"></i>';
+    status.textContent = '✅ Transcription complete!';
+    status.style.color = '#00e676';
+  }
+}
+</script>
